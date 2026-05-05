@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HCAI Study Workflow</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Modern CSS Reset & Variables */
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --success: #10b981;
+            --success-hover: #059669;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+        }
+
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: var(--bg-color); 
+            color: var(--text-main); 
+            display: flex; 
+            justify-content: center; 
+            padding: 50px 20px; 
+            margin: 0;
+            line-height: 1.6;
+        }
+
+        .container { 
+            background: var(--card-bg); 
+            padding: 40px 50px; 
+            border-radius: 16px; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05); 
+            max-width: 650px; 
+            width: 100%; 
+        }
+
+        h1 { text-align: center; color: var(--text-main); font-weight: 700; margin-bottom: 10px; }
+        .subtitle { text-align: center; color: var(--text-muted); margin-bottom: 40px; font-size: 15px;}
+
+        .step-box { 
+            margin-bottom: 24px; 
+            padding: 24px; 
+            border: 2px solid var(--border-color); 
+            border-radius: 12px; 
+            background: #fafafa; 
+            transition: all 0.3s ease;
+        }
+        
+        .step-box h3 { margin-top: 0; color: var(--text-main); font-size: 18px; margin-bottom: 15px;}
+        
+        .step-box.active { 
+            border-color: var(--primary); 
+            background: #eff6ff; 
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.1);
+        }
+
+        input[type="text"] { 
+            width: 100%; 
+            padding: 14px; 
+            margin: 10px 0 20px 0; 
+            border: 1px solid var(--border-color); 
+            border-radius: 8px; 
+            font-size: 16px; 
+            box-sizing: border-box;
+            transition: border-color 0.3s;
+        }
+        input[type="text"]:focus { outline: none; border-color: var(--primary); }
+
+        button { 
+            display: block; 
+            width: 100%; 
+            padding: 14px; 
+            background-color: var(--primary); 
+            color: white; 
+            border: none; 
+            border-radius: 8px; 
+            font-size: 16px; 
+            cursor: pointer; 
+            font-weight: 600; 
+            transition: all 0.3s ease; 
+        }
+        button:hover { background-color: var(--primary-hover); transform: translateY(-1px); }
+        button:disabled { background-color: #cbd5e1; cursor: not-allowed; transform: none; }
+        
+        .btn-launch { background-color: var(--success); }
+        .btn-launch:hover { background-color: var(--success-hover); }
+
+        .status-badge { 
+            display: inline-block;
+            background: #dcfce7;
+            color: #15803d;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 14px;
+            margin-top: 15px;
+        }
+
+        #workflow-steps { display: none; animation: fadeIn 0.5s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Modal Styles */
+        .modal-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 1000;
+            justify-content: center; align-items: center;
+        }
+        .modal-content {
+            background: white; padding: 30px 40px; border-radius: 12px; max-width: 500px;
+            width: 90%; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+        }
+        .modal-content h3 { margin-top: 0; color: var(--primary); }
+        .modal-close { margin-top: 25px; background-color: var(--text-muted); }
+        .modal-close:hover { background-color: #475569; }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>HCAI Study Portal</h1>
+    <div class="subtitle">Visa Preparation AI Evaluation Study</div>
+    
+    <div class="step-box active" id="step-0">
+        <h3>Step 0: Participant Registration</h3>
+        <p style="color: #64748b; font-size: 14px;">Please enter your assigned Participant ID to unlock your personalized workflow.</p>
+        <input type="text" id="participant-id" placeholder="e.g., 101">
+        <button id="start-btn">Confirm ID & Unlock Workflow</button>
+        <div style="text-align: center;"><div id="status-display" style="display: none;"></div></div>
+    </div>
+
+    <div id="workflow-steps">
+        <div class="step-box">
+            <h3>Step 1: Demographics</h3>
+            <button id="btn-demo" class="survey-btn">1. Complete Demographics Survey</button>
+        </div>
+
+        <div class="step-box">
+            <h3>Step 2: Task Instructions</h3>
+            <button id="btn-task" class="survey-btn" style="background-color: #475569;">2. Read Your Mission</button>
+        </div>
+
+        <div class="step-box">
+            <h3>Step 3: Pre-Task Survey</h3>
+            <button id="btn-pre" class="survey-btn">3. Complete Pre-Task Survey</button>
+        </div>
+
+        <div class="step-box active" style="border-width: 2px; border-color: var(--success);">
+            <h3>Step 4: AI Prototype Task</h3>
+            <p style="font-size: 13px; color: #64748b; margin-bottom: 15px;">(Opens in a new tab. Please return here after completing the task.)</p>
+            <button id="btn-prototype" class="btn-launch">4. Launch Assigned System</button>
+        </div>
+
+        <div class="step-box">
+            <h3>Step 5: Post-Task Survey</h3>
+            <button id="btn-post" class="survey-btn">5. Complete Post-Task Survey</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="task-modal">
+    <div class="modal-content">
+        <div id="modal-text"></div>
+        <button class="modal-close" id="close-modal-btn">I Understand</button>
+    </div>
+</div>
+
+<script>
+    // --- Configuration ---
+    const QUALTRICS_DEMO = "https://qualtricsxmxjnf7f797.qualtrics.com/jfe/form/SV_6XWSTPN572uWFEO"; 
+    const QUALTRICS_PRE = "https://qualtricsxmxjnf7f797.qualtrics.com/jfe/form/SV_bDgxyzaOULiA6GO";  
+    const QUALTRICS_POST = "https://qualtricsxmxjnf7f797.qualtrics.com/jfe/form/SV_2bGdSKzYt7lfpsO"; 
+
+    const BASELINE_URL = "https://ai-chatbot-kabg.onrender.com";
+    const ENHANCED_URL = "https://enhanced-ai-chatbot.onrender.com";
+
+    // --- State Variables ---
+    let pid = "";
+    let sid = "";
+
+    // --- Step 0: ID Logic ---
+    document.getElementById('start-btn').addEventListener('click', () => {
+        const inputVal = document.getElementById('participant-id').value.trim();
+        if (!inputVal) {
+            alert("Please enter a valid Participant ID.");
+            return;
+        }
+        
+        pid = inputVal;
+        const numericPart = pid.replace(/\D/g, ''); 
+        sid = (numericPart && parseInt(numericPart) % 2 === 1) ? 1 : 2;
+
+        const systemName = sid === 1 ? "Baseline AI Chatbot" : "Enhanced Visa Workspace";
+
+        // Update UI States
+        document.getElementById('participant-id').disabled = true;
+        document.getElementById('start-btn').style.display = "none";
+        
+        const statusDisplay = document.getElementById('status-display');
+        statusDisplay.style.display = "inline-block";
+        statusDisplay.className = "status-badge";
+        statusDisplay.innerText = `Welcome, Participant ${pid} | Assigned to: ${systemName}`;
+        
+        // Dynamically update Step 4 button text
+        document.getElementById('btn-prototype').innerText = `4. Launch ${systemName}`;
+
+        // Show workflow
+        document.getElementById('workflow-steps').style.display = "block";
+    });
+
+    // --- Qualtrics Redirects ---
+    function openQualtrics(baseUrl) {
+        const url = `${baseUrl}?participantID=${encodeURIComponent(pid)}&systemID=${encodeURIComponent(sid)}`;
+        window.open(url, '_blank'); 
+    }
+
+    document.getElementById('btn-demo').addEventListener('click', () => openQualtrics(QUALTRICS_DEMO));
+    document.getElementById('btn-pre').addEventListener('click', () => openQualtrics(QUALTRICS_PRE));
+    document.getElementById('btn-post').addEventListener('click', () => openQualtrics(QUALTRICS_POST));
+
+    // --- Dynamic Task Modal Logic ---
+    const taskModal = document.getElementById('task-modal');
+    
+    document.getElementById('btn-task').addEventListener('click', () => {
+        let taskHTML = "";
+        
+        if (sid === 1) {
+            // Baseline Task Description
+            taskHTML = `
+                <h3>Task Scenario</h3>
+                <p>Imagine you are preparing for a U.S. F-1 or B-1/B-2 visa interview. Your goal is to evaluate your application risks and practice your interview strategy.</p>
+                <div style="background: #f1f5f9; padding: 15px; border-radius: 8px; margin-top: 15px;">
+                    <strong style="color: #334155;">Your Assigned System: Baseline Chatbot</strong><br>
+                    You are assigned to the standard baseline system. You can upload relevant visa documents (like DS-160 or CV). The system functions as a general AI chatbot to provide conversational advice and answer your questions.
+                </div>
+            `;
+        } else {
+            // Enhanced Task Description
+            taskHTML = `
+                <h3>Task Scenario</h3>
+                <p>Imagine you are preparing for a U.S. F-1 or B-1/B-2 visa interview. Your goal is to evaluate your application risks and practice your interview strategy.</p>
+                <div style="background: #eff6ff; padding: 15px; border-radius: 8px; margin-top: 15px;">
+                    <strong style="color: #1e40af;">Your Assigned System: Enhanced Workspace</strong><br>
+                    You are assigned to the advanced Visa Sensemaking Workspace. Please upload your documents and actively utilize the structured tools provided:<br><br>
+                    • <b>Risk Radar</b> & Metadata extraction<br>
+                    • <b>Dynamic Checklist</b> & Insights<br>
+                    • <b>Strict Visa Officer (VO) Mode</b> (Turn this ON to stress-test your answers!)
+                </div>
+            `;
+        }
+
+        document.getElementById('modal-text').innerHTML = taskHTML;
+        taskModal.style.display = "flex";
+    });
+
+    document.getElementById('close-modal-btn').addEventListener('click', () => {
+        taskModal.style.display = "none";
+    });
+
+    // --- Step 4: Routing ---
+    document.getElementById('btn-prototype').addEventListener('click', () => {
+        const targetHost = (sid === 1) ? BASELINE_URL : ENHANCED_URL;
+        const finalUrl = `${targetHost}/chat.html?participantID=${encodeURIComponent(pid)}&systemID=${encodeURIComponent(sid)}`;
+        window.open(finalUrl, '_blank'); 
+    });
+</script>
+</body>
+</html>
