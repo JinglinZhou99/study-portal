@@ -183,21 +183,20 @@
     let pid = "";
     let sid = "";
 
-    // --- Step 0: ID Logic ---
-    document.getElementById('start-btn').addEventListener('click', () => {
-        const inputVal = document.getElementById('participant-id').value.trim();
-        if (!inputVal) {
-            alert("Please enter a valid Participant ID.");
-            return;
-        }
-        
-        pid = inputVal;
-        const numericPart = pid.replace(/\D/g, ''); 
-        sid = (numericPart && parseInt(numericPart) % 2 === 1) ? 1 : 2;
+    // --- Core Function: Activate Workflow and Update URL ---
+    function activateWorkflow(participantID, systemID) {
+        pid = participantID;
+        sid = systemID;
 
-        const systemName = sid === 1 ? "Baseline AI Chatbot" : "Enhanced Visa Workspace";
+        // 1. Update browser URL without reloading the page
+        const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + `?participantID=${encodeURIComponent(pid)}&systemID=${encodeURIComponent(sid)}`;
+        window.history.pushState({ path: newUrl }, '', newUrl);
 
-        // Update UI States
+        // 2. Determine system name
+        const systemName = sid == 1 ? "Baseline AI Chatbot" : "Enhanced Visa Workspace";
+
+        // 3. Update UI States
+        document.getElementById('participant-id').value = pid;
         document.getElementById('participant-id').disabled = true;
         document.getElementById('start-btn').style.display = "none";
         
@@ -209,8 +208,36 @@
         // Dynamically update Step 4 button text
         document.getElementById('btn-prototype').innerText = `4. Launch ${systemName}`;
 
-        // Show workflow
+        // Show workflow steps
         document.getElementById('workflow-steps').style.display = "block";
+    }
+
+    // --- On Page Load: Check URL for parameters ---
+    window.addEventListener('DOMContentLoaded', () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlPid = urlParams.get('participantID');
+        const urlSid = urlParams.get('systemID');
+
+        // If parameters exist in the URL, automatically activate the workflow
+        if (urlPid && urlSid) {
+            activateWorkflow(urlPid, urlSid);
+        }
+    });
+
+    // --- Step 0: ID Submission Logic ---
+    document.getElementById('start-btn').addEventListener('click', () => {
+        const inputVal = document.getElementById('participant-id').value.trim();
+        if (!inputVal) {
+            alert("Please enter a valid Participant ID.");
+            return;
+        }
+        
+        // Calculate system ID (Odd = 1 = Baseline, Even = 2 = Enhanced)
+        const numericPart = inputVal.replace(/\D/g, ''); 
+        const calculatedSid = (numericPart && parseInt(numericPart) % 2 === 1) ? 1 : 2;
+
+        // Trigger workflow
+        activateWorkflow(inputVal, calculatedSid);
     });
 
     // --- Qualtrics Redirects ---
@@ -229,7 +256,7 @@
     document.getElementById('btn-task').addEventListener('click', () => {
         let taskHTML = "";
         
-        if (sid === 1) {
+        if (sid == 1) {
             // Baseline Task Description
             taskHTML = `
                 <h3>Task Scenario</h3>
@@ -264,10 +291,8 @@
 
     // --- Step 4: Routing ---
     document.getElementById('btn-prototype').addEventListener('click', () => {
-        const targetHost = (sid === 1) ? BASELINE_URL : ENHANCED_URL;
+        const targetHost = (sid == 1) ? BASELINE_URL : ENHANCED_URL;
         const finalUrl = `${targetHost}/chat.html?participantID=${encodeURIComponent(pid)}&systemID=${encodeURIComponent(sid)}`;
         window.open(finalUrl, '_blank'); 
     });
 </script>
-</body>
-</html>
