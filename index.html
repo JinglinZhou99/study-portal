@@ -250,33 +250,76 @@
     document.getElementById('btn-pre').addEventListener('click', () => openQualtrics(QUALTRICS_PRE));
     document.getElementById('btn-post').addEventListener('click', () => openQualtrics(QUALTRICS_POST));
 
-    // --- Dynamic Task Modal Logic ---
+    // --- Dynamic Task Modal Logic & File Generation ---
     const taskModal = document.getElementById('task-modal');
     
+    // 生成一个极具代表性的、带有隐患的签证申请人测试文件 (txt格式)
+    const mockProfileText = `[APPLICANT PROFILE FOR VISA MOCK INTERVIEW]
+
+Name: Wei LI
+Age: 25
+Visa Type: F-1 (Student)
+Intended Program: Master of Science in Computer Science, UC Berkeley
+
+[ACADEMIC BACKGROUND]
+Undergraduate Institution: Harbin Institute of Technology (HIT)
+Major: Engineering Mechanics
+GPA: 3.8/4.0
+Key Projects:
+1. Computational Fluid Dynamics (CFD) modeling for aerospace applications.
+2. UAV (Unmanned Aerial Vehicle) shell stress analysis under extreme weather conditions.
+
+[FINANCIAL INFO]
+Funding Source: Personal & Family Funds
+Parents' Combined Annual Income: 100,000 RMB
+Bank Statement Balance: 1,500,000 RMB (Generated from the recent sale of a family property, but not explicitly explained in standard DS-160)
+
+[STUDY PLAN / CAREER GOAL]
+I want to transition from traditional mechanics to Computer Science to focus on AI and software engineering. After graduation, I plan to return to China to work as a software engineer at a tech company like Tencent or ByteDance.`;
+
+    // 将文本转换为可下载的 Blob 对象
+    const profileBlob = new Blob([mockProfileText], { type: 'text/plain' });
+    const profileDownloadUrl = URL.createObjectURL(profileBlob);
+
     document.getElementById('btn-task').addEventListener('click', () => {
         let taskHTML = "";
         
+        // 共通的任务背景介绍 & 文件下载区
+        const commonTaskHeader = `
+            <h3>Your Mission: Visa Interview Prep</h3>
+            <p>Imagine you are <strong>Wei LI</strong>, a Chinese student applying for an F-1 visa to study Computer Science at UC Berkeley. However, Wei has a complex background that might trigger a 214(b) refusal or an administrative check (221g).</p>
+            
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                <strong style="color: #0f172a; font-size: 15px;">📥 Step A: Download Test Profile</strong>
+                <p style="font-size: 13px; color: #64748b; margin: 8px 0;">Please download Wei's CV/Study Profile. You will need to upload this file to the AI system in Step 4.</p>
+                <a href="${profileDownloadUrl}" download="Wei_Li_Visa_Profile.txt" style="display: inline-block; background: #3b82f6; color: white; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; font-weight: 500;">⬇️ Download Test Profile (.txt)</a>
+            </div>
+        `;
+        
         if (sid == 1) {
             // Baseline Task Description
-            taskHTML = `
-                <h3>Task Scenario</h3>
-                <p>Imagine you are preparing for a U.S. F-1 or B-1/B-2 visa interview. Your goal is to evaluate your application risks and practice your interview strategy.</p>
-                <div style="background: #f1f5f9; padding: 15px; border-radius: 8px; margin-top: 15px;">
-                    <strong style="color: #334155;">Your Assigned System: Baseline Chatbot</strong><br>
-                    You are assigned to the standard baseline system. You can upload relevant visa documents (like DS-160 or CV). The system functions as a general AI chatbot to provide conversational advice and answer your questions.
+            taskHTML = commonTaskHeader + `
+                <div style="background: #f1f5f9; padding: 15px; border-radius: 8px;">
+                    <strong style="color: #334155;">Step B: Use the Baseline Chatbot</strong><br>
+                    <p style="font-size: 14px; margin-top: 8px;">In Step 4, you will launch the standard baseline system. Your goal is to:</p>
+                    <ul style="font-size: 14px; padding-left: 20px; color: #334155;">
+                        <li>Upload the text file you just downloaded.</li>
+                        <li>Chat with the AI to figure out what the risks are in Wei's profile.</li>
+                        <li>Ask the AI to help you prepare a good explanation for the Visa Officer.</li>
+                    </ul>
                 </div>
             `;
         } else {
             // Enhanced Task Description
-            taskHTML = `
-                <h3>Task Scenario</h3>
-                <p>Imagine you are preparing for a U.S. F-1 or B-1/B-2 visa interview. Your goal is to evaluate your application risks and practice your interview strategy.</p>
-                <div style="background: #eff6ff; padding: 15px; border-radius: 8px; margin-top: 15px;">
-                    <strong style="color: #1e40af;">Your Assigned System: Enhanced Workspace</strong><br>
-                    You are assigned to the advanced Visa Sensemaking Workspace. Please upload your documents and actively utilize the structured tools provided:<br><br>
-                    • <b>Risk Radar</b> & Metadata extraction<br>
-                    • <b>Dynamic Checklist</b> & Insights<br>
-                    • <b>Strict Visa Officer (VO) Mode</b> (Turn this ON to stress-test your answers!)
+            taskHTML = commonTaskHeader + `
+                <div style="background: #eff6ff; padding: 15px; border-radius: 8px;">
+                    <strong style="color: #1e40af;">Step B: Use the Enhanced Workspace</strong><br>
+                    <p style="font-size: 14px; margin-top: 8px;">In Step 4, you will launch the advanced Visa Sensemaking Workspace. Your goal is to:</p>
+                    <ul style="font-size: 14px; padding-left: 20px; color: #1e40af;">
+                        <li>Upload the text file and review the <b>Risk Radar</b> on the left to identify red flags.</li>
+                        <li>Review the <b>Dynamic Checklist</b> on the right for action items.</li>
+                        <li>Turn ON <b>Strict Visa Officer (VO) Mode</b> and try to defend Wei's funding and major change in a mock interview!</li>
+                    </ul>
                 </div>
             `;
         }
