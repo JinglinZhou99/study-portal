@@ -40,7 +40,17 @@
         }
 
         h1 { text-align: center; color: var(--text-main); font-weight: 700; margin-bottom: 10px; }
-        .subtitle { text-align: center; color: var(--text-muted); margin-bottom: 40px; font-size: 15px;}
+        .subtitle { text-align: center; color: var(--text-muted); margin-bottom: 30px; font-size: 15px;}
+        
+        .intro-text {
+            background: #f1f5f9;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            font-size: 14px;
+            color: #475569;
+            border-left: 5px solid var(--primary);
+        }
 
         .step-box { 
             margin-bottom: 24px; 
@@ -110,10 +120,36 @@
             background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 1000;
             justify-content: center; align-items: center;
         }
+        
+        /* 💡 这里是修改的核心部分 💡 */
         .modal-content {
-            background: white; padding: 30px 40px; border-radius: 12px; max-width: 500px;
-            width: 90%; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+            background: white; 
+            padding: 30px 40px; 
+            border-radius: 12px; 
+            max-width: 500px;
+            width: 90%; 
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+            
+            /* 新增下面两行来实现滚动条 */
+            max-height: 85vh; 
+            overflow-y: auto; 
         }
+        /* 定制一下滚动条样式让它更好看一点（可选） */
+        .modal-content::-webkit-scrollbar {
+            width: 8px;
+        }
+        .modal-content::-webkit-scrollbar-track {
+            background: #f1f5f9; 
+            border-radius: 4px;
+        }
+        .modal-content::-webkit-scrollbar-thumb {
+            background: #cbd5e1; 
+            border-radius: 4px;
+        }
+        .modal-content::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8; 
+        }
+
         .modal-content h3 { margin-top: 0; color: var(--primary); }
         .modal-close { margin-top: 25px; background-color: var(--text-muted); }
         .modal-close:hover { background-color: #475569; }
@@ -125,6 +161,10 @@
 <div class="container">
     <h1>HCAI Study Portal</h1>
     <div class="subtitle">Visa Preparation AI Evaluation Study</div>
+
+    <div class="intro-text">
+        Every year, thousands of Chinese students applying to US universities face outright visa rejections or lengthy administrative background checks. Common reasons include studying sensitive academic subjects or having confusing financial documents. Our goal is to see if AI can help applicants successfully prepare for these crucial visa interviews.
+    </div>
     
     <div class="step-box active" id="step-0">
         <h3>Step 0: Participant Registration</h3>
@@ -183,64 +223,43 @@
     let pid = "";
     let sid = "";
 
-    // --- Core Function: Activate Workflow and Update URL ---
     function activateWorkflow(participantID, systemID) {
         pid = participantID;
         sid = systemID;
-
-        // 1. Update browser URL without reloading the page
         const newUrl = window.location.protocol + "//" + window.location.host + window.location.pathname + `?participantID=${encodeURIComponent(pid)}&systemID=${encodeURIComponent(sid)}`;
         window.history.pushState({ path: newUrl }, '', newUrl);
-
-        // 2. Determine system name
         const systemName = sid == 1 ? "Baseline AI Chatbot" : "Enhanced Visa Workspace";
-
-        // 3. Update UI States
         document.getElementById('participant-id').value = pid;
         document.getElementById('participant-id').disabled = true;
         document.getElementById('start-btn').style.display = "none";
-        
         const statusDisplay = document.getElementById('status-display');
         statusDisplay.style.display = "inline-block";
         statusDisplay.className = "status-badge";
         statusDisplay.innerText = `Welcome, Participant ${pid} | Assigned to: ${systemName}`;
-        
-        // Dynamically update Step 4 button text
         document.getElementById('btn-prototype').innerText = `4. Launch ${systemName}`;
-
-        // Show workflow steps
         document.getElementById('workflow-steps').style.display = "block";
     }
 
-    // --- On Page Load: Check URL for parameters ---
     window.addEventListener('DOMContentLoaded', () => {
         const urlParams = new URLSearchParams(window.location.search);
         const urlPid = urlParams.get('participantID');
         const urlSid = urlParams.get('systemID');
-
-        // If parameters exist in the URL, automatically activate the workflow
         if (urlPid && urlSid) {
             activateWorkflow(urlPid, urlSid);
         }
     });
 
-    // --- Step 0: ID Submission Logic ---
     document.getElementById('start-btn').addEventListener('click', () => {
         const inputVal = document.getElementById('participant-id').value.trim();
         if (!inputVal) {
             alert("Please enter a valid Participant ID.");
             return;
         }
-        
-        // Calculate system ID (Odd = 1 = Baseline, Even = 2 = Enhanced)
         const numericPart = inputVal.replace(/\D/g, ''); 
         const calculatedSid = (numericPart && parseInt(numericPart) % 2 === 1) ? 1 : 2;
-
-        // Trigger workflow
         activateWorkflow(inputVal, calculatedSid);
     });
 
-    // --- Qualtrics Redirects ---
     function openQualtrics(baseUrl) {
         const url = `${baseUrl}?participantID=${encodeURIComponent(pid)}&systemID=${encodeURIComponent(sid)}`;
         window.open(url, '_blank'); 
@@ -250,80 +269,108 @@
     document.getElementById('btn-pre').addEventListener('click', () => openQualtrics(QUALTRICS_PRE));
     document.getElementById('btn-post').addEventListener('click', () => openQualtrics(QUALTRICS_POST));
 
-    // --- Dynamic Task Modal Logic & File Generation ---
     const taskModal = document.getElementById('task-modal');
     
-    // 生成一个极具代表性的、带有隐患的签证申请人测试文件 (txt格式)
     const mockProfileText = `[APPLICANT PROFILE FOR VISA MOCK INTERVIEW]
 
-Name: Wei LI
-Age: 25
-Visa Type: F-1 (Student)
-Intended Program: Master of Science in Computer Science, UC Berkeley
+Visa Type: F-1.
+Age: 25.
+Major: Engineering Mechanics.
+School: Harbin Institute of Technology.
+Income: 100,000 RMB.
+Savings: 1,500,000 RMB.
+Sponsor: Parents.
 
-[ACADEMIC BACKGROUND]
-Undergraduate Institution: Harbin Institute of Technology (HIT)
-Major: Engineering Mechanics
-GPA: 3.8/4.0
-Key Projects:
-1. Computational Fluid Dynamics (CFD) modeling for aerospace applications.
-2. UAV (Unmanned Aerial Vehicle) shell stress analysis under extreme weather conditions.
+[BACKGROUND NOTES FOR RISK RADAR]
+Risk factors include an undergraduate project involving UAV drone shell stress analysis and Computational Fluid Dynamics.
+The large bank balance mentioned above is from selling a family property.
+Career goal is to return to China and work at Tencent or ByteDance.
 
-[FINANCIAL INFO]
-Funding Source: Personal & Family Funds
-Parents' Combined Annual Income: 100,000 RMB
-Bank Statement Balance: 1,500,000 RMB (Generated from the recent sale of a family property, but not explicitly explained in standard DS-160)
+Itinerary: Master of Science in Computer Science, UC Berkeley`;
 
-[STUDY PLAN / CAREER GOAL]
-I want to transition from traditional mechanics to Computer Science to focus on AI and software engineering. After graduation, I plan to return to China to work as a software engineer at a tech company like Tencent or ByteDance.`;
-
-    // 将文本转换为可下载的 Blob 对象
     const profileBlob = new Blob([mockProfileText], { type: 'text/plain' });
     const profileDownloadUrl = URL.createObjectURL(profileBlob);
 
     document.getElementById('btn-task').addEventListener('click', () => {
         let taskHTML = "";
         
-        // 共通的任务背景介绍 & 文件下载区
-        const commonTaskHeader = `
-            <h3>Your Mission: Visa Interview Prep</h3>
-            <p>Imagine you are <strong>Wei LI</strong>, a Chinese student applying for an F-1 visa to study Computer Science at UC Berkeley. However, Wei has a complex background that might trigger a 214(b) refusal or an administrative check (221g).</p>
-            
-            <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
-                <strong style="color: #0f172a; font-size: 15px;">📥 Step A: Download Test Profile</strong>
-                <p style="font-size: 13px; color: #64748b; margin: 8px 0;">Please download Wei's CV/Study Profile. You will need to upload this file to the AI system in Step 4.</p>
-                <a href="${profileDownloadUrl}" download="Wei_Li_Visa_Profile.txt" style="display: inline-block; background: #3b82f6; color: white; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; font-weight: 500;">⬇️ Download Test Profile (.txt)</a>
+        // 1. 魏利的风险点解析
+        const profileAnalysis = `
+            <h3 style="margin-bottom: 15px;">Your Persona: Wei LI</h3>
+            <p style="font-size: 14px; margin-bottom: 10px;">Wei is a strong student, but has two major red flags that you must resolve using the AI:</p>
+            <ul style="font-size: 13px; color: #1e293b; background: #fff7ed; padding: 10px 10px 10px 25px; border-radius: 6px; border-left: 4px solid #f97316;">
+                <li><b>The Financial Paradox:</b> Parents earn 100k RMB/year, but the bank balance is 1.5 million. How can they afford this?</li>
+                <li><b>The Background Check Risk:</b> The applicant's undergraduate degree is from Harbin Institute of Technology (a university known for its military and defense ties), and they worked on a project involving drones. This combination is highly sensitive when applying for a Master's in Computer Science and often triggers extra scrutiny.</li>
+            </ul>
+        `;
+
+        // 2. 下载区
+        const downloadSection = `
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px; margin: 15px 0;">
+                <strong style="color: #0f172a; font-size: 15px;">📥 Step A: Download Wei's Profile</strong>
+                <p style="font-size: 13px; color: #64748b; margin: 5px 0;">Download this profile file now so you can upload it into the AI system during Step 4.</p>
+                <a href="${profileDownloadUrl}" download="Wei_Li_Visa_Profile.txt" style="display: inline-block; background: #3b82f6; color: white; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 13px; font-weight: 500;">⬇️ Download Profile (.txt)</a>
             </div>
         `;
         
+        // 3. 系统特定指南
+        let systemGuidance = "";
         if (sid == 1) {
-            // Baseline Task Description
-            taskHTML = commonTaskHeader + `
+            systemGuidance = `
                 <div style="background: #f1f5f9; padding: 15px; border-radius: 8px;">
-                    <strong style="color: #334155;">Step B: Use the Baseline Chatbot</strong><br>
-                    <p style="font-size: 14px; margin-top: 8px;">In Step 4, you will launch the standard baseline system. Your goal is to:</p>
-                    <ul style="font-size: 14px; padding-left: 20px; color: #334155;">
-                        <li>Upload the text file you just downloaded.</li>
-                        <li>Chat with the AI to figure out what the risks are in Wei's profile.</li>
-                        <li>Ask the AI to help you prepare a good explanation for the Visa Officer.</li>
-                    </ul>
+                    <strong style="color: #334155;">Step B: Consulting the Baseline AI</strong>
+                    <p style="font-size: 13px; margin-top: 5px; margin-bottom: 5px; color: #475569;">This system is a standard conversational assistant. You need to guide the AI to help you.</p>
+                    <p style="font-size: 12px; color: #64748b; margin-top: 0px; margin-bottom: 15px;"><i>(💡 Note: The following prompts are just examples to get you started. You don't have to copy them exactly—feel free to ask anything in your own words!)</i></p>
+                    
+                    <strong style="font-size: 12px; color: #1e293b;">🕵️ For Risk Evaluation:</strong>
+                    <p style="font-size: 12px; font-style: italic; color: #475569; background: #fff; padding: 8px; border-radius: 4px; border: 1px solid #cbd5e1; margin: 4px 0 10px 0;">
+                        "Based on my profile, what are the top 3 reasons a Visa Officer might reject me or put me in administrative processing?"<br><br>
+                        "What should I say if the VO asks why I am switching my major from Mechanics to Computer Science?"
+                    </p>
+                    
+                    <strong style="font-size: 12px; color: #1e293b;">✍️ For Drafting Explanations:</strong>
+                    <p style="font-size: 12px; font-style: italic; color: #475569; background: #fff; padding: 8px; border-radius: 4px; border: 1px solid #cbd5e1; margin: 4px 0 10px 0;">
+                        "My undergrad is from HIT and I did a drone (UAV) project. Help me draft a 3-sentence explanation to prove my MSCS studies will be purely civilian."<br><br>
+                        "How do I naturally explain to the VO that my parents' 1.5 million RMB bank balance came from selling a house, even though their salary is only 100k/year?"
+                    </p>
+                    
+                    <strong style="font-size: 12px; color: #1e293b;">🎤 For Mock Interview:</strong>
+                    <p style="font-size: 12px; font-style: italic; color: #475569; background: #fff; padding: 8px; border-radius: 4px; border: 1px solid #cbd5e1; margin: 4px 0 0 0;">
+                        "Act as a strict US Visa Officer. Conduct a mock F-1 visa interview with me based on my profile. Ask me one question at a time and wait for my reply."<br><br>
+                        "Can we do a quick mock interview focusing ONLY on the funding and bank statement part of my application?"
+                    </p>
                 </div>
             `;
         } else {
-            // Enhanced Task Description
-            taskHTML = commonTaskHeader + `
+            systemGuidance = `
                 <div style="background: #eff6ff; padding: 15px; border-radius: 8px;">
-                    <strong style="color: #1e40af;">Step B: Use the Enhanced Workspace</strong><br>
-                    <p style="font-size: 14px; margin-top: 8px;">In Step 4, you will launch the advanced Visa Sensemaking Workspace. Your goal is to:</p>
-                    <ul style="font-size: 14px; padding-left: 20px; color: #1e40af;">
-                        <li>Upload the text file and review the <b>Risk Radar</b> on the left to identify red flags.</li>
-                        <li>Review the <b>Dynamic Checklist</b> on the right for action items.</li>
-                        <li>Turn ON <b>Strict Visa Officer (VO) Mode</b> and try to defend Wei's funding and major change in a mock interview!</li>
-                    </ul>
+                    <strong style="color: #1e40af;">Step B: Navigating the Enhanced Workspace</strong>
+                    <p style="font-size: 13px; margin-top: 5px; margin-bottom: 5px; color: #1e3a8a;">This system provides active guidance. Combine the UI panels with your chat prompts.</p>
+                    <p style="font-size: 12px; color: #60a5fa; margin-top: 0px; margin-bottom: 15px;"><i>(💡 Note: The following prompts are just examples to get you started. You don't have to copy them exactly—feel free to explore in your own words!)</i></p>
+                    
+                    <strong style="font-size: 12px; color: #1e40af;">🎯 Use the Risk Radar:</strong>
+                    <p style="font-size: 12px; font-style: italic; color: #1e3a8a; background: #fff; padding: 8px; border-radius: 4px; border: 1px solid #bfdbfe; margin: 4px 0 10px 0;">
+                        "I see the Risk Radar flagged my UAV project as HIGH risk. Can you give me a 'safe' way to describe this project on my resume?"<br><br>
+                        "The radar shows my funding is a MED risk. How can I proactively explain the 1.5 million RMB house sale before the VO even asks?"
+                    </p>
+
+                    <strong style="font-size: 12px; color: #1e40af;">📊 Use Mianjing (Past Experiences) Insights:</strong>
+                    <p style="font-size: 12px; font-style: italic; color: #1e3a8a; background: #fff; padding: 8px; border-radius: 4px; border: 1px solid #bfdbfe; margin: 4px 0 10px 0;">
+                        "Based on the Mianjing stats for HIT students, what extra documents should I bring to the interview to clear the background check faster?"<br><br>
+                        "Look at the recent F-1 Mianjing data. Are VO officers currently focusing more on the study plan or the funding for master's students?"
+                    </p>
+
+                    <strong style="font-size: 12px; color: #1e40af;">🛑 Use Strict VO Mode:</strong>
+                    <p style="font-size: 12px; font-style: italic; color: #1e3a8a; background: #fff; padding: 8px; border-radius: 4px; border: 1px solid #bfdbfe; margin: 4px 0 0 0;">
+                        (Toggle Strict VO Mode ON) -> "Let's start the mock interview. Grill me specifically on my 1.5 million RMB bank statement first."<br><br>
+                        (Toggle Strict VO Mode ON) -> "Act as a VO. I will hand you my resume. Ask me about the UAV drone project and I will try to defend it."
+                    </p>
                 </div>
             `;
         }
 
+
+        taskHTML = profileAnalysis + downloadSection + systemGuidance;
         document.getElementById('modal-text').innerHTML = taskHTML;
         taskModal.style.display = "flex";
     });
@@ -332,10 +379,11 @@ I want to transition from traditional mechanics to Computer Science to focus on 
         taskModal.style.display = "none";
     });
 
-    // --- Step 4: Routing ---
     document.getElementById('btn-prototype').addEventListener('click', () => {
         const targetHost = (sid == 1) ? BASELINE_URL : ENHANCED_URL;
         const finalUrl = `${targetHost}/chat.html?participantID=${encodeURIComponent(pid)}&systemID=${encodeURIComponent(sid)}`;
         window.open(finalUrl, '_blank'); 
     });
 </script>
+</body>
+</html>
